@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Ease</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{ --maroon-900:#4A0E18; --maroon-700:#6E1423; --maroon-100:#F7E9EB; --gold:#C7972C; --ink:#2A1418; --muted:#6E5457; --line:#EADCDD; }
+*{ box-sizing:border-box; }
+html,body{ margin:0; padding:0; }
+body{ font-family:'Inter', sans-serif; color:var(--ink); background:#FFFDFB; }
+h1,h2,h3{ font-family:'Playfair Display', serif; margin:0; }
+button, input, select, textarea{ font-family:'Inter', sans-serif; }
+
+.layout{ min-height:100vh; }
+.topnav{ position:sticky; top:0; z-index:20; background:#fff; border-bottom:1px solid var(--line); padding:12px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.topnav .brand-mini{ display:flex; align-items:center; gap:10px; cursor:pointer; }
+.topnav .brand-mini:hover .logo{ transform:scale(1.06); }
+.topnav .brand-mini .logo{ width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,var(--maroon-700),var(--maroon-900)); display:flex; align-items:center; justify-content:center; font-size:16px; color:#fff; flex-shrink:0; transition:transform .15s ease; }
+.topnav .brand-mini .name{ font-family:'Playfair Display',serif; font-weight:800; font-size:18px; color:var(--maroon-900); }
+.menu-btn{ display:flex; align-items:center; gap:8px; border:1px solid var(--maroon-700); background:#fff; color:var(--maroon-900); border-radius:10px; padding:8px 14px; font-weight:600; font-size:14px; cursor:pointer; }
+.menu-btn .count{ background:var(--maroon-700); color:#fff; border-radius:999px; font-size:11px; padding:1px 7px; }
+.main{ padding:24px 20px 80px; max-width:760px; margin:0 auto; }
+
+.drawer-overlay{ position:fixed; inset:0; background:rgba(30,8,12,0.4); z-index:25; opacity:0; pointer-events:none; transition:opacity .2s ease; }
+.drawer-overlay.show{ opacity:1; pointer-events:auto; }
+.drawer{
+  position:fixed; top:0; left:0; height:100%; width:320px; max-width:88vw;
+  background:var(--maroon-100); z-index:30; overflow-y:auto; padding:20px;
+  transform:translateX(-105%); transition:transform .25s ease; box-shadow:6px 0 24px rgba(0,0,0,0.18);
+}
+.drawer.open{ transform:translateX(0); }
+.drawer-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.drawer-head h3{ font-size:17px; }
+.drawer-close{ background:#fff; border:1px solid var(--line); border-radius:8px; width:32px; height:32px; font-size:16px; cursor:pointer; color:var(--maroon-900); }
+@media (min-width:800px){ .main{ max-width:840px; } }
+
+.role-pill{ display:inline-block; padding:4px 14px; border-radius:999px; font-size:12px; font-weight:700; letter-spacing:.3px; background:#fff; color:var(--maroon-900); border:1px solid var(--line); }
+.role-pill.owner{ background:var(--maroon-900); color:#fff; }
+
+.avatar-lg{ width:76px; height:76px; border-radius:50%; object-fit:cover; border:3px solid var(--maroon-700); }
+.avatar-sm{ width:26px; height:26px; border-radius:50%; object-fit:cover; border:1px solid var(--maroon-700); vertical-align:middle; }
+
+.se-brand{ display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+.se-brand .logo{ width:46px; height:46px; border-radius:12px; background:linear-gradient(135deg,var(--maroon-700),var(--maroon-900)); display:flex; align-items:center; justify-content:center; font-size:22px; color:#fff; flex-shrink:0; }
+.se-title{ font-family:'Playfair Display',serif; font-weight:800; font-size:30px; color:var(--maroon-900); margin:0; }
+.se-sub{ color:var(--muted); font-size:14.5px; margin-top:2px; }
+
+hr{ border:none; border-top:1px solid var(--line); margin:20px 0; }
+
+.se-card{ border:1px solid var(--line); border-radius:18px; padding:20px 22px; margin:14px 0; background:#fff; box-shadow:0 1px 2px rgba(74,14,24,0.04); border-left:5px solid var(--maroon-700); }
+.se-card h3{ margin:0 0 6px 0; font-size:20px; color:var(--ink); }
+.se-tag{ font-size:12px; color:var(--maroon-700); font-weight:700; letter-spacing:.02em; }
+.se-loc{ color:var(--muted); font-size:14px; margin:2px 0 10px 0; }
+.se-price{ font-family:'Playfair Display',serif; font-size:26px; font-weight:800; color:var(--maroon-900); }
+.se-price span{ font-size:14px; color:var(--muted); font-weight:500; }
+.se-meta{ color:var(--muted); font-size:13px; margin-top:8px; }
+.se-badge{ display:inline-block; background:var(--maroon-100); color:var(--maroon-900); border-radius:8px; padding:2px 10px; font-size:12px; font-weight:600; margin-right:6px; }
+.se-badge.status-ok{ background:#DFF3E4; color:#1B7A3A; }
+.se-badge.status-full{ background:#EDEDED; color:#666; }
+.wa-btn{ display:inline-block; background:#25D366; color:#fff; text-decoration:none; padding:8px 16px; border-radius:10px; font-weight:700; font-size:14px; margin-top:6px; }
+
+.stat-tile{ background:var(--maroon-900); color:#fff; border-radius:16px; padding:18px 20px; }
+.stat-tile .num{ font-family:'Playfair Display',serif; font-size:26px; font-weight:800; color:#fff; }
+.stat-tile .lbl{ font-size:11px; opacity:.8; text-transform:uppercase; letter-spacing:.5px; color:#fff; }
+.stat-row{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.stat-row.four{ grid-template-columns:repeat(4,1fr); }
+@media (max-width:700px){ .stat-row, .stat-row.four{ grid-template-columns:1fr 1fr; } }
+
+.btn{ border-radius:10px; font-weight:600; border:1px solid var(--maroon-700); background:#fff; color:var(--maroon-900); padding:9px 16px; cursor:pointer; font-size:14px; }
+.btn.primary{ background:var(--maroon-700); border-color:var(--maroon-700); color:#fff; }
+.btn.primary:hover{ background:var(--maroon-900); border-color:var(--maroon-900); }
+.btn.block{ width:100%; }
+.btn.small{ padding:6px 12px; font-size:13px; }
+
+.tabs{ display:flex; gap:6px; border-bottom:1px solid var(--line); margin-bottom:18px; }
+.tab-btn{ background:none; border:none; padding:10px 16px; font-size:14px; font-weight:600; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; }
+.tab-btn.active{ color:var(--maroon-900); border-bottom-color:var(--maroon-700); }
+.tab-pane{ display:none; }
+.tab-pane.active{ display:block; }
+
+.field{ margin-bottom:14px; }
+.field label{ display:block; font-size:13.5px; font-weight:600; color:var(--ink); margin-bottom:5px; }
+.field input[type=text], .field input[type=password], .field input[type=number], .field select, .field textarea{
+  width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:8px; font-size:14.5px; background:#fff; color:var(--ink);
+}
+.field textarea{ min-height:80px; resize:vertical; }
+.field .hint{ font-size:12px; color:var(--muted); margin-top:4px; }
+.row2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media (max-width:600px){ .row2{ grid-template-columns:1fr; } }
+
+.info-box{ background:var(--maroon-100); border-left:3px solid var(--maroon-700); border-radius:8px; padding:12px 16px; font-size:13.5px; color:var(--ink); margin:12px 0; white-space:pre-line; }
+.warn-box{ background:#FFF6E5; border-left:3px solid var(--gold); border-radius:8px; padding:12px 16px; font-size:13.5px; color:var(--ink); margin:12px 0; }
+.err-box{ background:#FBE3E0; border-left:3px solid #B5502F; border-radius:8px; padding:12px 16px; font-size:13.5px; color:#7A2A1E; margin:12px 0; }
+.ok-box{ background:#E5F5EA; border-left:3px solid #1B7A3A; border-radius:8px; padding:12px 16px; font-size:13.5px; color:#1B5A2A; margin:12px 0; }
+
+.expander{ border:1px solid var(--line); border-radius:10px; margin-top:10px; overflow:hidden; }
+.expander summary{ padding:10px 14px; font-size:13.5px; font-weight:600; color:var(--maroon-900); cursor:pointer; background:#FAF6F5; }
+.expander .inner{ padding:14px; }
+
+.login-hero{ background:linear-gradient(160deg,#6E1423,#2A0810); border-radius:24px; padding:48px 36px; color:#fff; min-height:340px; display:flex; flex-direction:column; justify-content:center; }
+.login-hero .emoji{ font-size:40px; }
+.login-hero h1{ color:#fff; margin:14px 0 8px 0; }
+.login-hero p{ color:#EAD7D9; font-size:15.5px; line-height:1.6; margin:0; }
+.login-grid{ display:grid; grid-template-columns:1fr 1.2fr; gap:32px; max-width:920px; margin:60px auto; padding:0 20px; }
+@media (max-width:760px){ .login-grid{ grid-template-columns:1fr; margin:30px auto; } }
+
+.bar-chart{ margin-top:10px; }
+.bar-row{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.bar-row .lbl{ width:70px; font-size:13px; color:var(--ink); }
+.bar-row .track{ flex:1; background:var(--maroon-100); border-radius:6px; overflow:hidden; height:18px; }
+.bar-row .fill{ background:var(--maroon-700); height:100%; }
+.bar-row .val{ width:26px; font-size:13px; color:var(--muted); text-align:right; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ===========================================================================
+   DB HELPERS — localStorage stands in for the SQLite file
+=========================================================================== */
+const DBK = { users:'se_users', listings:'se_listings', saved:'se_saved', reviews:'se_reviews', seq:'se_seq', session:'se_current_user' };
+function dbGet(key, fallback){ const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }
+function dbSet(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+function initDB(){
+  if(!localStorage.getItem(DBK.users)){
+    dbSet(DBK.users, [
+      {id:1, name:"Demo Student", email:"student@studentease.demo", password:"1234", role:"student", photo:null},
+      {id:2, name:"Demo Owner", email:"owner@studentease.demo", password:"1234", role:"owner", photo:null}
+    ]);
+  }
+  if(!localStorage.getItem(DBK.listings)){
+    dbSet(DBK.listings, [
+      {id:1, owner_email:"owner@studentease.demo", title:"Shree Residency PG", kind:"PG", audience:"11th/12th", college:"Deogiri College", area:"Chhatrapati Sambhajinagar", room_type:"Double Sharing", rent:4500, food:2500, distance:0.7, gender:"Any", contact:"9876543210", description:"Furnished PG near college with Wi-Fi.", photo:null, photos:null, available:1, map_link:null},
+      {id:2, owner_email:"owner@studentease.demo", title:"Campus Home", kind:"PG", audience:"CET/JEE", college:"Deogiri College", area:"Chhatrapati Sambhajinagar", room_type:"Triple Sharing", rent:3500, food:2200, distance:1.1, gender:"Any", contact:"9876543211", description:"Budget-friendly student PG.", photo:null, photos:null, available:1, map_link:null},
+      {id:3, owner_email:"owner@studentease.demo", title:"Maa Annapurna Mess", kind:"Mess", audience:"11th/12th", college:"Deogiri College", area:"Chhatrapati Sambhajinagar", room_type:"Monthly", rent:1800, food:1800, distance:0.4, gender:"Any", contact:"9876543212", description:"Breakfast and dinner available.", photo:null, photos:null, available:1, map_link:null},
+      {id:4, owner_email:"owner@studentease.demo", title:"Scholar Stay", kind:"Hostel", audience:"College Student", college:"CSMSS College", area:"Chhatrapati Sambhajinagar", room_type:"Single", rent:6500, food:3000, distance:0.9, gender:"Any", contact:"9876543213", description:"Single room with study table.", photo:null, photos:null, available:1, map_link:null},
+      {id:5, owner_email:"owner@studentease.demo", title:"Sahyadri Boys PG", kind:"PG", audience:"CET/JEE", college:"MIT College", area:"Chhatrapati Sambhajinagar", room_type:"Double Sharing", rent:4200, food:2000, distance:1.4, gender:"Male", contact:"9876543214", description:"Safe student accommodation.", photo:null, photos:null, available:1, map_link:null},
+      {id:6, owner_email:"owner@studentease.demo", title:"Aarohi Girls PG", kind:"PG", audience:"College Student", college:"Deogiri College", area:"Chhatrapati Sambhajinagar", room_type:"Double Sharing", rent:5000, food:2300, distance:0.6, gender:"Female", contact:"9876543215", description:"Girls-only PG with security.", photo:null, photos:null, available:1, map_link:null}
+    ]);
+  }
+  if(!localStorage.getItem(DBK.saved)) dbSet(DBK.saved, []);
+  if(!localStorage.getItem(DBK.reviews)) dbSet(DBK.reviews, []);
+  if(!localStorage.getItem(DBK.seq)) dbSet(DBK.seq, {user:3, listing:7});
+}
+function nextId(kind){ const seq = dbGet(DBK.seq, {user:3, listing:7}); const id = seq[kind]; seq[kind]++; dbSet(DBK.seq, seq); return id; }
+
+function getUsers(){ return dbGet(DBK.users, []); }
+function getListings(){ return dbGet(DBK.listings, []); }
+function getSaved(){ return dbGet(DBK.saved, []); }
+function getReviews(){ return dbGet(DBK.reviews, []); }
+function currentUser(){ return dbGet(DBK.session, null); }
+function setCurrentUser(u){ dbSet(DBK.session, u); }
+
+/* ===========================================================================
+   HELPERS
+=========================================================================== */
+function toDataUri(file){
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(file);
+  });
+}
+function avatarUrl(name, photo){
+  if(photo) return photo;
+  return `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(name || 'Student')}&backgroundColor=f2d1d6,f7e9eb,e8c4c9&radius=50`;
+}
+function whatsappLink(contact){
+  let digits = (contact || '').replace(/\D/g, '');
+  if(!digits) return null;
+  if(digits.length === 10) digits = '91' + digits;
+  return `https://wa.me/${digits}`;
+}
+function getPhotos(r){
+  if(r.photos){
+    try{ const lst = JSON.parse(r.photos); if(lst && lst.length) return lst; } catch(e){}
+  }
+  return r.photo ? [r.photo] : [];
+}
+function coverHtml(r){
+  const photos = getPhotos(r);
+  if(photos.length){
+    return `<img src="${photos[0]}" style="width:100%;max-height:190px;object-fit:cover;border-radius:14px;margin-bottom:12px;">`;
+  }
+  const emoji = {PG:"🏠", Hostel:"🏢", Mess:"🍽️"}[r.kind] || "🏠";
+  return `<div style="width:100%;height:120px;border-radius:14px;background:var(--maroon-100);display:flex;align-items:center;justify-content:center;font-size:44px;margin-bottom:12px;">${emoji}</div>`;
+}
+function ratingSummary(listingId){
+  const revs = getReviews().filter(r => r.listing_id === listingId);
+  if(!revs.length) return {str:"No ratings yet", avg:0};
+  const avg = Math.round((revs.reduce((s,r)=>s+r.rating,0) / revs.length) * 10) / 10;
+  const full = Math.round(avg);
+  return {str:`${'⭐'.repeat(full)}${'☆'.repeat(5-full)} ${avg} (${revs.length})`, avg};
+}
+function ownerInfo(email){
+  const u = getUsers().find(u => u.email === email);
+  const cnt = getListings().filter(l => l.owner_email === email).length;
+  return { name: u ? u.name : "Owner", photo: u ? u.photo : null, trusted: cnt >= 3 };
+}
+
+/* ===========================================================================
+   COMPONENTS
+=========================================================================== */
+function brandHtml(subtitle){
+  return `<div class="se-brand"><div class="logo">🏠</div><div>
+    <p class="se-title">Student Ease</p><div class="se-sub">${subtitle}</div></div></div>`;
+}
+function listingCardHtml(r){
+  const available = r.available !== 0;
+  const statusHtml = available ? '<span class="se-badge status-ok">Available</span>' : '<span class="se-badge status-full">Full</span>';
+  const {str: ratingStr} = ratingSummary(r.id);
+  const owner = ownerInfo(r.owner_email);
+  const trustHtml = owner.trusted ? ' <span class="se-badge status-ok">🛡 Trusted Owner</span>' : '';
+  const mapHtml = r.map_link ? `<a href="${r.map_link}" target="_blank" style="color:var(--maroon-700);font-weight:600;font-size:13px;">📍 View on Google Maps</a>` : '';
+  return `
+  <div class="se-card">
+    ${coverHtml(r)}
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <img class="avatar-sm" src="${avatarUrl(owner.name, owner.photo)}">
+      <span style="font-size:13px;color:var(--muted);">Listed by <b>${owner.name}</b></span>${trustHtml}
+    </div>
+    <span class="se-tag">${r.kind.toUpperCase()}</span>
+    <h3>${r.title}</h3>
+    <div class="se-loc">${r.college} • ${r.area} • ${r.distance} km from college</div>
+    <div class="se-price">₹${r.rent.toLocaleString('en-IN')}<span>/month</span></div>
+    <div class="se-meta">
+      <span class="se-badge">${r.room_type}</span>
+      <span class="se-badge">Food ₹${r.food.toLocaleString('en-IN')}/mo</span>
+      <span class="se-badge">${r.gender}</span>
+      ${statusHtml}
+    </div>
+    <div class="se-meta" style="margin-top:8px;">📞 <b>${r.contact}</b> &nbsp;•&nbsp; ${ratingStr}</div>
+    <div style="margin-top:6px;">${mapHtml}</div>
+  </div>`;
+}
+function profileWidgetHtml(){
+  const u = currentUser();
+  return `
+  <img class="avatar-lg" src="${avatarUrl(u.name, u.photo)}">
+  <p style="font-weight:700;margin:8px 0 0;">${u.name}</p>
+  <div style="font-size:13px;color:var(--muted);">${u.email}</div>
+  <details class="expander" style="margin-top:10px;">
+    <summary>Change profile photo</summary>
+    <div class="inner">
+      <input type="file" accept="image/png,image/jpeg" onchange="handleProfilePhoto(this)">
+      <div class="field hint" style="margin-top:6px;">No photo yet? A cartoon avatar based on your name is used automatically.</div>
+    </div>
+  </details>`;
+}
+async function handleProfilePhoto(input){
+  if(!input.files || !input.files[0]) return;
+  const dataUri = await toDataUri(input.files[0]);
+  const users = getUsers();
+  const u = users.find(u => u.email === currentUser().email);
+  u.photo = dataUri;
+  dbSet(DBK.users, users);
+  const sess = currentUser(); sess.photo = dataUri; setCurrentUser(sess);
+  render();
+}
+
+/* ===========================================================================
+   LOGIN
+=========================================================================== */
+let loginError = '', loginOk = '';
+function renderLogin(){
+  document.getElementById('app').innerHTML = `
+  <div class="login-grid">
+    <div class="login-hero">
+      <div class="emoji">🏠</div>
+      <h1>Student Ease</h1>
+      <p>Find a trusted PG, hostel or mess near your college — or list your property for students to discover, in one systematic place.</p>
+    </div>
+    <div>
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('login-tab')">Login</button>
+        <button class="tab-btn" onclick="switchTab('register-tab')">Create account</button>
+      </div>
+
+      <div id="login-tab" class="tab-pane active">
+        ${loginError ? `<div class="err-box">${loginError}</div>` : ''}
+        <div class="field"><label>Email</label><input type="text" id="login_email"></div>
+        <div class="field"><label>Password</label><input type="password" id="login_password"></div>
+        <button class="btn primary block" onclick="doLogin()">Login</button>
+        <div class="info-box">Demo Student: student@studentease.demo / 1234
+Demo Owner: owner@studentease.demo / 1234</div>
+      </div>
+
+      <div id="register-tab" class="tab-pane">
+        ${loginOk ? `<div class="ok-box">${loginOk}</div>` : ''}
+        <div class="field"><label>Name</label><input type="text" id="reg_name"></div>
+        <div class="field"><label>Email</label><input type="text" id="reg_email"></div>
+        <div class="field"><label>Password</label><input type="password" id="reg_password"></div>
+        <div class="field"><label>Account type</label>
+          <select id="reg_role"><option value="student">student</option><option value="owner">owner</option></select>
+        </div>
+        <button class="btn block" onclick="doRegister()">Create account</button>
+      </div>
+    </div>
+  </div>`;
+}
+function switchTab(id){
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+function doLogin(){
+  const email = document.getElementById('login_email').value;
+  const password = document.getElementById('login_password').value;
+  const u = getUsers().find(u => u.email === email && u.password === password);
+  if(u){
+    setCurrentUser({name:u.name, email:u.email, role:u.role, photo:u.photo});
+    loginError = ''; render();
+  } else {
+    loginError = 'Invalid email or password.'; render();
+  }
+}
+function doRegister(){
+  const name = document.getElementById('reg_name').value.trim();
+  const email = document.getElementById('reg_email').value.trim();
+  const password = document.getElementById('reg_password').value;
+  const role = document.getElementById('reg_role').value;
+  if(!name || !email || !password){ loginOk = ''; render(); return; }
+  const users = getUsers();
+  if(users.find(u => u.email === email)){
+    loginOk = ''; render();
+    setTimeout(() => { document.getElementById('register-tab').insertAdjacentHTML('afterbegin', '<div class="err-box">Email already registered.</div>'); }, 0);
+    return;
+  }
+  users.push({id: nextId('user'), name, email, password, role, photo:null});
+  dbSet(DBK.users, users);
+  loginOk = 'Account created. Please login.';
+  render();
+  switchToRegisterOk();
+}
+function switchToRegisterOk(){
+  document.querySelectorAll('.tab-btn')[1].click();
+}
+
+/* ===========================================================================
+   STUDENT DASHBOARD
+=========================================================================== */
+let filterState = { college:'All', kind:'All', audience:'All', gender:'Any', maxRent:10000, maxDistance:3.0, onlyAvailable:true, sort:'Lowest rent', search:'' };
+let activeStudentTab = 'browse';
+let editingReviewFor = null;
+let drawerOpen = false;
+
+function openDrawer(){ drawerOpen = true; render(); }
+function closeDrawer(){ drawerOpen = false; render(); }
+function activeFilterCount(){
+  let n = 0;
+  if(filterState.college !== 'All') n++;
+  if(filterState.kind !== 'All') n++;
+  if(filterState.audience !== 'All') n++;
+  if(filterState.gender !== 'Any') n++;
+  if(filterState.maxRent < 10000) n++;
+  if(filterState.maxDistance < 3.0) n++;
+  if(!filterState.onlyAvailable) n++;
+  return n;
+}
+
+function toggleSave(listingId){
+  const email = currentUser().email;
+  let saved = getSaved();
+  const exists = saved.find(s => s.student_email === email && s.listing_id === listingId);
+  if(exists) saved = saved.filter(s => !(s.student_email === email && s.listing_id === listingId));
+  else saved.push({student_email: email, listing_id: listingId});
+  dbSet(DBK.saved, saved);
+  render();
+}
+function submitReview(listingId){
+  const rating = parseInt(document.getElementById(`rate_${listingId}`).value, 10);
+  const comment = document.getElementById(`cmt_${listingId}`).value;
+  const email = currentUser().email;
+  let reviews = getReviews();
+  const idx = reviews.findIndex(r => r.listing_id === listingId && r.student_email === email);
+  if(idx >= 0) reviews[idx] = {listing_id:listingId, student_email:email, rating, comment};
+  else reviews.push({listing_id:listingId, student_email:email, rating, comment});
+  dbSet(DBK.reviews, reviews);
+  render();
+}
+function listingDetailHtml(r){
+  const photos = getPhotos(r);
+  const photosHtml = photos.length > 1 ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">${photos.map(p=>`<img src="${p}" style="width:110px;height:80px;object-fit:cover;border-radius:8px;">`).join('')}</div>` : '';
+  const wa = whatsappLink(r.contact);
+  const waHtml = wa ? `<a class="wa-btn" href="${wa}" target="_blank">💬 Chat on WhatsApp</a>` : '';
+  const email = currentUser().email;
+  const isSaved = !!getSaved().find(s => s.student_email === email && s.listing_id === r.id);
+  const myReview = getReviews().find(rv => rv.listing_id === r.id && rv.student_email === email);
+  return `
+  ${photosHtml}
+  <p><b>Description:</b> ${r.description || '—'}</p>
+  ${waHtml}
+  <div style="margin-top:10px;"><button class="btn" onclick="toggleSave(${r.id})">${isSaved ? '💔 Remove from saved' : '❤️ Save listing'}</button></div>
+  <div style="margin-top:14px; padding-top:14px; border-top:1px solid var(--line);">
+    <p style="font-weight:700;">Rate this listing</p>
+    <div class="field"><label>Your rating</label>
+      <input type="range" id="rate_${r.id}" min="1" max="5" value="${myReview ? myReview.rating : 5}">
+    </div>
+    <div class="field"><label>Comment (optional)</label><input type="text" id="cmt_${r.id}" value="${myReview ? (myReview.comment||'').replace(/"/g,'&quot;') : ''}"></div>
+    <button class="btn primary" onclick="submitReview(${r.id})">Submit review</button>
+  </div>`;
+}
+function studentFilteredListings(){
+  const listings = getListings();
+  const q = filterState.search.trim().toLowerCase();
+  let results = listings.filter(r => {
+    if(filterState.college !== 'All' && r.college !== filterState.college) return false;
+    if(filterState.kind !== 'All' && r.kind !== filterState.kind) return false;
+    if(filterState.audience !== 'All' && r.audience !== filterState.audience) return false;
+    if(filterState.gender !== 'Any' && r.gender !== 'Any' && r.gender !== filterState.gender) return false;
+    if(r.rent > filterState.maxRent || r.distance > filterState.maxDistance) return false;
+    if(filterState.onlyAvailable && r.available === 0) return false;
+    if(q && !r.title.toLowerCase().includes(q) && !r.area.toLowerCase().includes(q) && !r.college.toLowerCase().includes(q)) return false;
+    return true;
+  });
+  if(filterState.sort === 'Lowest rent') results.sort((a,b)=>a.rent-b.rent);
+  else if(filterState.sort === 'Nearest college') results.sort((a,b)=>a.distance-b.distance);
+  else results.sort((a,b)=> ratingSummary(b.id).avg - ratingSummary(a.id).avg);
+  return results;
+}
+function updateFilter(key, val){
+  filterState[key] = val;
+  render();
+}
+function renderStudentDashboard(){
+  const listings = getListings();
+  const colleges = ['All', ...new Set(listings.map(r => r.college))].sort((a,b)=> a==='All'?-1:a.localeCompare(b));
+  const opt = (val, cur) => `<option value="${val}" ${val===cur?'selected':''}>${val}</option>`;
+  const fCount = activeFilterCount();
+
+  document.getElementById('app').innerHTML = `
+  <div class="layout">
+    <div class="topnav">
+      <div class="brand-mini" onclick="openDrawer()" title="Home / Filters"><div class="logo">🏠</div><div class="name">Student Ease</div></div>
+    </div>
+
+    <div class="drawer-overlay ${drawerOpen?'show':''}" onclick="closeDrawer()"></div>
+    <div class="drawer ${drawerOpen?'open':''}">
+      <div class="drawer-head"><h3>Filters & profile</h3><button class="drawer-close" onclick="closeDrawer()">✕</button></div>
+      <span class="role-pill">STUDENT</span>
+      <div style="margin-top:12px;">${profileWidgetHtml()}</div>
+      <hr>
+      <h3 style="font-size:15px;">🔍 Filters</h3>
+      <div class="field"><label>College</label>
+        <select onchange="updateFilter('college', this.value)">${colleges.map(c=>opt(c, filterState.college)).join('')}</select></div>
+      <div class="field"><label>Type</label>
+        <select onchange="updateFilter('kind', this.value)">${['All','PG','Hostel','Mess'].map(c=>opt(c, filterState.kind)).join('')}</select></div>
+      <div class="field"><label>For</label>
+        <select onchange="updateFilter('audience', this.value)">${['All','11th/12th','CET/JEE','College Student'].map(c=>opt(c, filterState.audience)).join('')}</select></div>
+      <div class="field"><label>Gender preference</label>
+        <select onchange="updateFilter('gender', this.value)">${['Any','Male','Female'].map(c=>opt(c, filterState.gender)).join('')}</select></div>
+      <div class="field"><label>Max rent (₹${filterState.maxRent}/month)</label>
+        <input type="range" min="1000" max="15000" step="500" value="${filterState.maxRent}" oninput="updateFilter('maxRent', parseInt(this.value))"></div>
+      <div class="field"><label>Max distance (${filterState.maxDistance} km)</label>
+        <input type="range" min="0.1" max="5" step="0.1" value="${filterState.maxDistance}" oninput="updateFilter('maxDistance', parseFloat(this.value))"></div>
+      <div class="field"><label><input type="checkbox" ${filterState.onlyAvailable?'checked':''} onchange="updateFilter('onlyAvailable', this.checked)"> Only available</label></div>
+      <div class="field"><label>Sort by</label>
+        <select onchange="updateFilter('sort', this.value)">${['Lowest rent','Nearest college','Top rated'].map(c=>opt(c, filterState.sort)).join('')}</select></div>
+      <hr>
+      <button class="btn block" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="main">
+      <div class="tabs">
+        <button class="tab-btn ${activeStudentTab==='browse'?'active':''}" onclick="setStudentTab('browse')">🔍 Browse</button>
+        <button class="tab-btn ${activeStudentTab==='saved'?'active':''}" onclick="setStudentTab('saved')">❤️ Saved</button>
+      </div>
+      <div id="student-browse" class="tab-pane ${activeStudentTab==='browse'?'active':''}"></div>
+      <div id="student-saved" class="tab-pane ${activeStudentTab==='saved'?'active':''}"></div>
+    </div>
+  </div>`;
+
+  if(activeStudentTab === 'browse'){
+    const results = studentFilteredListings();
+    let html = `<div class="field"><input type="text" placeholder="Search by name, area or college" value="${filterState.search}" oninput="updateFilter('search', this.value)"></div>`;
+    if(!listings.length){ html += `<div class="info-box">No listings published yet. Check back soon.</div>`; }
+    else {
+      html += `<div style="font-size:13px;color:var(--muted);margin:6px 0;">${results.length} matching option(s)</div>`;
+      if(!results.length) html += `<div class="warn-box">No listing matches these filters. Try relaxing rent, distance, or "Only available".</div>`;
+      results.forEach(r => {
+        html += listingCardHtml(r);
+        html += `<details class="expander"><summary>View details, photos & contact owner</summary><div class="inner">${listingDetailHtml(r)}</div></details>`;
+      });
+    }
+    document.getElementById('student-browse').innerHTML = html;
+  } else {
+    const email = currentUser().email;
+    const savedIds = getSaved().filter(s => s.student_email === email).map(s => s.listing_id);
+    const mine = listings.filter(r => savedIds.includes(r.id));
+    let html = mine.length ? '' : `<div class="info-box">Nothing saved yet — tap ❤️ Save listing on any option in Browse.</div>`;
+    mine.forEach(r => {
+      html += listingCardHtml(r);
+      html += `<details class="expander"><summary>View details, photos & contact owner</summary><div class="inner">${listingDetailHtml(r)}</div></details>`;
+    });
+    document.getElementById('student-saved').innerHTML = html;
+  }
+}
+function setStudentTab(tab){ activeStudentTab = tab; render(); }
+
+/* ===========================================================================
+   OWNER DASHBOARD
+=========================================================================== */
+let editingListingId = null;
+let activeOwnerTab = 'add';
+let formPhotoData = {};
+
+async function handleFormPhotos(input, formId){
+  if(!input.files || !input.files.length) return;
+  const uris = await Promise.all([...input.files].map(toDataUri));
+  formPhotoData[formId] = uris;
+}
+function listingFormHtml(defaults, submitLabel, formId){
+  const d = defaults || {};
+  const photos = getPhotos(d);
+  const photosPreview = photos.length ? `<div style="display:flex;gap:8px;margin-bottom:8px;">${photos.map(p=>`<img src="${p}" style="width:110px;height:80px;object-fit:cover;border-radius:8px;">`).join('')}</div>` : '';
+  const opt = (arr, cur) => arr.map(v => `<option value="${v}" ${v===cur?'selected':''}>${v}</option>`).join('');
+  return `
+  <div id="form_${formId}">
+    <div class="field"><label>Listing photos (optional, multiple allowed)</label>
+      ${photosPreview}
+      <input type="file" accept="image/png,image/jpeg" multiple onchange="handleFormPhotos(this,'${formId}')"></div>
+    <div class="field"><label>Listing name</label><input type="text" id="${formId}_title" value="${d.title||''}"></div>
+    <div class="row2">
+      <div class="field"><label>Type</label><select id="${formId}_kind">${opt(['PG','Hostel','Mess'], d.kind||'PG')}</select></div>
+      <div class="field"><label>Target students</label><select id="${formId}_audience">${opt(['11th/12th','CET/JEE','College Student','All'], d.audience||'11th/12th')}</select></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Nearby college</label><input type="text" id="${formId}_college" value="${d.college||''}"></div>
+      <div class="field"><label>Area / locality</label><input type="text" id="${formId}_area" value="${d.area||''}"></div>
+    </div>
+    <div class="field"><label>Room / plan</label><select id="${formId}_room">${opt(['Single','Double Sharing','Triple Sharing','Monthly'], d.room_type||'Single')}</select></div>
+    <div class="row2">
+      <div class="field"><label>Rent per month (₹)</label><input type="number" id="${formId}_rent" min="0" step="500" value="${d.rent!=null?d.rent:3000}"></div>
+      <div class="field"><label>Food / mess cost per month (₹)</label><input type="number" id="${formId}_food" min="0" step="100" value="${d.food!=null?d.food:0}"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Distance from college (km)</label><input type="number" id="${formId}_distance" min="0" step="0.1" value="${d.distance!=null?d.distance:1.0}"></div>
+      <div class="field"><label>Gender</label><select id="${formId}_gender">${opt(['Any','Male','Female'], d.gender||'Any')}</select></div>
+    </div>
+    <div class="field"><label>Contact number</label><input type="text" id="${formId}_contact" value="${d.contact||''}"></div>
+    <div class="field"><label>Google Maps link (optional)</label><input type="text" id="${formId}_map" value="${d.map_link||''}"></div>
+    <div class="field"><label>Description</label><textarea id="${formId}_desc">${d.description||''}</textarea></div>
+    <div class="field"><label><input type="checkbox" id="${formId}_available" ${(d.available!==0)?'checked':''}> Currently available</label></div>
+    <div id="${formId}_err"></div>
+    <button class="btn primary" onclick="submitListingForm('${formId}')">${submitLabel}</button>
+  </div>`;
+}
+function readListingForm(formId, existingPhotos){
+  const v = id => document.getElementById(`${formId}_${id}`).value;
+  const title = v('title'), college = v('college'), area = v('area'), contact = v('contact');
+  if(!title || !college || !area || !contact){
+    document.getElementById(`${formId}_err`).innerHTML = `<div class="err-box">Please fill listing name, college, area and contact.</div>`;
+    return null;
+  }
+  const photosJson = formPhotoData[formId] ? JSON.stringify(formPhotoData[formId]) : existingPhotos;
+  return {
+    title, kind:v('kind'), audience:v('audience'), college, area, room_type:v('room'),
+    rent: parseInt(v('rent'),10)||0, food: parseInt(v('food'),10)||0, distance: parseFloat(v('distance'))||0,
+    gender: v('gender'), contact, description: v('desc'),
+    available: document.getElementById(`${formId}_available`).checked ? 1 : 0,
+    photos: photosJson, map_link: v('map')
+  };
+}
+function submitListingForm(formId){
+  if(formId === 'add'){
+    const data = readListingForm('add', null);
+    if(!data) return;
+    const listings = getListings();
+    listings.push({id: nextId('listing'), owner_email: currentUser().email, photo:null, ...data});
+    dbSet(DBK.listings, listings);
+    formPhotoData['add'] = null;
+    render();
+  } else {
+    const mid = parseInt(formId.replace('edit_',''), 10);
+    const listings = getListings();
+    const existing = listings.find(l => l.id === mid);
+    const data = readListingForm(formId, existing.photos);
+    if(!data) return;
+    Object.assign(existing, data);
+    dbSet(DBK.listings, listings);
+    editingListingId = null;
+    render();
+  }
+}
+function deleteListing(id){
+  dbSet(DBK.listings, getListings().filter(l => l.id !== id));
+  render();
+}
+function toggleEdit(id){
+  editingListingId = editingListingId === id ? null : id;
+  render();
+}
+function setOwnerTab(tab){ activeOwnerTab = tab; render(); }
+function logout(){ setCurrentUser(null); render(); }
+
+function ownerEconomyHtml(mine){
+  if(!mine.length) return `<p style="font-size:13px;color:var(--muted);">Visible only to you — this is not shown to students.</p><div class="info-box">Publish a listing to see your economy overview.</div>`;
+  const occupied = mine.filter(m => m.available === 0);
+  const vacant = mine.filter(m => m.available !== 0);
+  const currentRevenue = occupied.reduce((s,m)=>s+m.rent,0);
+  const potentialRevenue = vacant.reduce((s,m)=>s+m.rent,0);
+  const occupancy = Math.round(occupied.length / mine.length * 100);
+  const ids = mine.map(m=>m.id);
+  const interest = getSaved().filter(s => ids.includes(s.listing_id)).length;
+  const ratings = mine.map(m => ratingSummary(m.id).avg).filter(a => a > 0);
+  const avgRating = ratings.length ? Math.round(ratings.reduce((a,b)=>a+b,0)/ratings.length*10)/10 : null;
+
+  const kindCounts = {};
+  mine.forEach(m => kindCounts[m.kind] = (kindCounts[m.kind]||0)+1);
+  const maxCount = Math.max(...Object.values(kindCounts));
+  const barsHtml = Object.entries(kindCounts).map(([k,v]) =>
+    `<div class="bar-row"><div class="lbl">${k}</div><div class="track"><div class="fill" style="width:${v/maxCount*100}%"></div></div><div class="val">${v}</div></div>`
+  ).join('');
+
+  return `
+  <p style="font-size:13px;color:var(--muted);">Visible only to you — this is not shown to students.</p>
+  <div class="stat-row four">
+    <div class="stat-tile"><div class="num">₹${currentRevenue.toLocaleString('en-IN')}</div><div class="lbl">Current monthly income (occupied)</div></div>
+    <div class="stat-tile"><div class="num">₹${potentialRevenue.toLocaleString('en-IN')}</div><div class="lbl">Potential extra income (vacant)</div></div>
+    <div class="stat-tile"><div class="num">${occupancy}%</div><div class="lbl">Occupancy rate</div></div>
+    <div class="stat-tile"><div class="num">${interest}</div><div class="lbl">Students who saved your listings</div></div>
+  </div>
+  ${avgRating ? `<p style="margin-top:14px;"><b>Average rating across your listings:</b> ${avgRating} / 5</p>` : ''}
+  <h3 style="font-size:16px;margin-top:18px;">Listings by type</h3>
+  <div class="bar-chart">${barsHtml}</div>`;
+}
+
+function renderOwnerDashboard(){
+  const email = currentUser().email;
+  const mine = getListings().filter(l => l.owner_email === email);
+  const total = mine.length;
+  const avgRent = total ? Math.round(mine.reduce((s,m)=>s+m.rent,0)/total) : 0;
+  const collegesCovered = new Set(mine.map(m=>m.college)).size;
+
+  document.getElementById('app').innerHTML = `
+  <div class="layout">
+    <div class="topnav">
+      <div class="brand-mini" onclick="openDrawer()" title="Home / Filters"><div class="logo">🏠</div><div class="name">Student Ease</div></div>
+    </div>
+
+    <div class="drawer-overlay ${drawerOpen?'show':''}" onclick="closeDrawer()"></div>
+    <div class="drawer ${drawerOpen?'open':''}">
+      <div class="drawer-head"><h3>Menu</h3><button class="drawer-close" onclick="closeDrawer()">✕</button></div>
+      <span class="role-pill owner">OWNER</span>
+      <div style="margin-top:12px;">${profileWidgetHtml()}</div>
+      <hr>
+      <button class="btn block" onclick="logout()">Logout</button>
+    </div>
+
+    <div class="main">
+      <div class="stat-row">
+        <div class="stat-tile"><div class="num">${total}</div><div class="lbl">Published listings</div></div>
+        <div class="stat-tile"><div class="num">₹${avgRent.toLocaleString('en-IN')}</div><div class="lbl">Average rent</div></div>
+        <div class="stat-tile"><div class="num">${collegesCovered}</div><div class="lbl">Colleges covered</div></div>
+      </div>
+      <div style="height:14px;"></div>
+      <div class="tabs">
+        <button class="tab-btn ${activeOwnerTab==='add'?'active':''}" onclick="setOwnerTab('add')">➕ Publish new listing</button>
+        <button class="tab-btn ${activeOwnerTab==='manage'?'active':''}" onclick="setOwnerTab('manage')">📋 Your published work</button>
+        <button class="tab-btn ${activeOwnerTab==='economy'?'active':''}" onclick="setOwnerTab('economy')">📊 Economy overview</button>
+      </div>
+      <div id="owner-pane"></div>
+    </div>
+  </div>`;
+
+  const pane = document.getElementById('owner-pane');
+  if(activeOwnerTab === 'add'){
+    pane.innerHTML = listingFormHtml(null, 'Publish listing', 'add');
+  } else if(activeOwnerTab === 'manage'){
+    let html = mine.length ? '' : `<div class="info-box">You haven't published anything yet — use the "Publish new listing" tab.</div>`;
+    mine.forEach(m => {
+      html += listingCardHtml(m);
+      html += `<div style="display:flex; gap:10px; margin-bottom:6px;">
+        <button class="btn small" onclick="toggleEdit(${m.id})">Edit</button>
+        <button class="btn small" onclick="deleteListing(${m.id})">Delete</button>
+      </div>`;
+      if(editingListingId === m.id){
+        html += `<div class="se-card">${listingFormHtml(m, 'Save changes', 'edit_'+m.id)}</div>`;
+      }
+    });
+    pane.innerHTML = html;
+  } else {
+    pane.innerHTML = ownerEconomyHtml(mine);
+  }
+}
+
+/* ===========================================================================
+   MAIN ROUTER
+=========================================================================== */
+function render(){
+  const u = currentUser();
+  if(!u) renderLogin();
+  else if(u.role === 'student') renderStudentDashboard();
+  else renderOwnerDashboard();
+}
+
+initDB();
+render();
+</script>
+</body>
+</html>
